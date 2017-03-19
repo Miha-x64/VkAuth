@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/VkAuth.iml" filepath="$PROJECT_DIR$/VkAuth.iml" />
+      <module fileurl="file://$PROJECT_DIR$/vkAuth/vkAuth.iml" filepath="$PROJECT_DIR$/vkAuth/vkAuth.iml" />
+      <module fileurl="file://$PROJECT_DIR$/vkAuthSample/vkAuthSample.iml" filepath="$PROJECT_DIR$/vkAuthSample/vkAuthSample.iml" />
+    </modules>
+  </component>
+</project>
