@@ -4,8 +4,8 @@ Authentication library for VK and Android.
 
 * Much more lightweight than
 [Official SDK](https://github.com/VKCOM/vk-android-sdk);
-* much better designed (no static Context, no `registerObject()` and such things;
-* we accept issues and PR.
+* much better designed (no static Context, no `registerObject()` and such things);
+* we'd accept issues and PRs (official SDK are not).
 
 # Features
 
