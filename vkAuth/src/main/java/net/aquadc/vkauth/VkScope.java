@@ -33,7 +33,7 @@ public enum VkScope {
 
     private static final VkScope[] V = values();
 
-    private final String scopeName;
+    /*pkg*/ final String scopeName;
 
     VkScope(String scopeName) {
         this.scopeName = scopeName;
@@ -45,6 +45,9 @@ public enum VkScope {
         return EnumSet.copyOf(Arrays.asList(scope));
     }
 
+    /**
+     * @throws NoSuchElementException when meets unknown scope
+     */
     /*pkg*/ static Set<VkScope> asSet(String[] scope) {
         int size = scope.length;
         VkScope[] vkScope = new VkScope[size];
@@ -54,6 +57,9 @@ public enum VkScope {
         return asSet(vkScope);
     }
 
+    /**
+     * @throws NoSuchElementException when meets unknown scope
+     */
     /*pkg*/ static VkScope byScopeName(String scopeName) {
         for (VkScope s : V) {
             if (s.scopeName.equals(scopeName)) {

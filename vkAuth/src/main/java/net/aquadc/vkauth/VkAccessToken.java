@@ -6,25 +6,20 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Presents VK API access token that used for loading API methods and other stuff.
  */
 public final class VkAccessToken implements Parcelable {
 
-    private static final String ACCESS_TOKEN = "access_token";
-    private static final String EXPIRES_IN = "expires_in";
-    private static final String USER_ID = "user_id";
-    private static final String SECRET = "secret";
-    private static final String HTTPS_REQUIRED = "https_required";
-    private static final String CREATED = "created";
-    private static final String EMAIL = "email";
-    private static final String SCOPE = "scope";
+    private static final String AccessToken = "access_token";
+    private static final String ExpiresIn = "expires_in";
+    private static final String UserId = "user_id";
+    private static final String Secret = "secret";
+    private static final String Created = "created";
+    private static final String Email = "email";
+    private static final String Scope = "scope";
 
     // String token for use in request parameters
     private final String accessToken;
@@ -48,55 +43,83 @@ public final class VkAccessToken implements Parcelable {
     // Token scope
     private final Set<VkScope> scope;
 
-    /*pkg*/ VkAccessToken(@Nullable Map<String, String> parameters) {
-        if (parameters == null) {
-            throw new NullPointerException();
+    @Nullable
+    /*pkg*/ static VkAccessToken create(@Nullable Map<String, String> parameters) {
+        // todo: real error-handling instead of returning nulls
+        if (parameters == null) return null;
+
+        String accessToken = parameters.get(AccessToken);
+        if (accessToken == null || accessToken.isEmpty()) return null;
+
+        String expiry = parameters.get(ExpiresIn);
+        int expiresIn;
+        try {
+            expiresIn = expiry == null ? 0 : Integer.parseInt(expiry);
+        } catch (NumberFormatException e) {
+            return null;
         }
-        if (parameters.size() == 0) {
-            throw new IllegalArgumentException();
-        }
+        if (expiresIn < 0) return null;
 
-        this.accessToken = required(parameters.get(ACCESS_TOKEN), "access token");
+        String userId = parameters.get(UserId);
+        if (userId == null || userId.isEmpty()) return null;
 
-        String expiry = parameters.get(EXPIRES_IN);
-        this.expiresIn = expiry == null ? 0 : Integer.parseInt(expiry);
+        String secret = parameters.get(Secret);
 
-        this.userId = required(parameters.get(USER_ID), "user ID");
-        this.secret = parameters.get(SECRET);
-
-        String created = parameters.get(CREATED);
-        if (created != null) {
-            this.created = Long.parseLong(created);
+        String createdStr = parameters.get(Created);
+        long created;
+        if (createdStr != null) { // todo: check format
+            try {
+                created = Long.parseLong(createdStr);
+            } catch (NumberFormatException e) {
+                return null;
+            }
         } else {
-            this.created = System.currentTimeMillis();
+            created = System.currentTimeMillis();
         }
 
-        this.email = parameters.get(EMAIL);
+        String email = parameters.get(Email);
 
-        String scope = parameters.get(SCOPE);
-        if (scope != null && !scope.isEmpty()) {
-            this.scope = VkScope.asSet(scope.split(","));
+        String scopeStr = parameters.get(Scope);
+        Set<VkScope> scope;
+        if (scopeStr != null && !scopeStr.isEmpty()) {
+            try {
+                scope = VkScope.asSet(scopeStr.split(","));
+            } catch (NoSuchElementException e) {
+                return null;
+            }
         } else {
-            this.scope = Collections.emptySet();
+            scope = Collections.emptySet();
         }
+
+        return new VkAccessToken(accessToken, expiresIn, userId, secret, created, email, scope);
+    }
+
+    private VkAccessToken(String accessToken, int expiresIn, String userId, @Nullable String secret, long created,
+                          @Nullable String email, Set<VkScope> scope) {
+        this.accessToken = accessToken;
+        this.expiresIn = expiresIn;
+        this.userId = userId;
+        this.secret = secret;
+        this.created = created;
+        this.email = email;
+        this.scope = scope;
     }
 
     private Map<String, String> tokenParams() {
         Map<String, String> params = new HashMap<>();
-        params.put(ACCESS_TOKEN, accessToken);
-        params.put(EXPIRES_IN, "" + expiresIn);
-        params.put(USER_ID, userId);
-        params.put(CREATED, "" + created);
+        params.put(AccessToken, accessToken);
+        params.put(ExpiresIn, "" + expiresIn);
+        params.put(UserId, userId);
+        params.put(Created, "" + created);
         if (scope != null) {
-            params.put(SCOPE, TextUtils.join(",", scope));
+            params.put(Scope, TextUtils.join(",", scope));
         }
 
         if (secret != null) {
-            params.put(SECRET, secret);
+            params.put(Secret, secret);
         }
-        params.put(HTTPS_REQUIRED, "1");
         if (email != null) {
-            params.put(EMAIL, email);
+            params.put(Email, email);
         }
         return params;
     }
@@ -114,17 +137,11 @@ public final class VkAccessToken implements Parcelable {
         return !(expiresIn > 0 && expiresIn * 1000 + created < System.currentTimeMillis());
     }
 
+    @Nullable
     /*pkg*/ VkAccessToken overriddenBy(@NonNull VkAccessToken token) {
         Map<String, String> newTokenParams = tokenParams();
         newTokenParams.putAll(token.tokenParams());
-        return new VkAccessToken(newTokenParams);
-    }
-
-    private static <T> T required(T t, String message) {
-        if (t == null) {
-            throw new NullPointerException(message + " is required");
-        }
-        return t;
+        return create(newTokenParams);
     }
 
     @Override
@@ -157,7 +174,7 @@ public final class VkAccessToken implements Parcelable {
         dest.writeString(this.email);
         dest.writeInt(scope.size());
         for (VkScope s : scope) {
-            dest.writeString(s.name());
+            dest.writeString(s.scopeName);
         }
     }
     /*pkg*/ VkAccessToken(Parcel in) {

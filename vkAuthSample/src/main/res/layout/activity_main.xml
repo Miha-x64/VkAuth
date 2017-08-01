@@ -13,10 +13,25 @@
     tools:context="net.aquadc.vkauth.sample.MainActivity">
 
     <Button
-        android:id="@+id/auth"
+        android:id="@+id/ofAppAuth"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Authorize"/>
+        android:text="Authorize through Official VK App"
+        android:enabled="false" />
+
+    <Button
+        android:id="@+id/webViewAuth"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Authorize through WebView"
+        android:enabled="false" />
+
+    <Button
+        android:id="@+id/autoAuth"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Authorize, choosing way automatically"
+        android:enabled="false" />
 
     <TextView
         android:id="@+id/output"

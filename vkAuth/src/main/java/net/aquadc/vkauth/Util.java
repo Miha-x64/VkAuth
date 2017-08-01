@@ -5,9 +5,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.support.annotation.Nullable;
-import android.support.annotation.VisibleForTesting;
 
-import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -16,13 +14,12 @@ import java.util.Map;
 /**
  * Created by mike on 21.02.17
  */
-@VisibleForTesting
-public final class Util {
+/*pkg*/ final class Util {
     private Util() {}
 
     // from VK SDK
-    @VisibleForTesting
-    public static String[] getCertificateFingerprints(Context ctx, String packageName) throws PackageManager.NameNotFoundException {
+    /*pkg*/ static String[] getCertificateFingerprints(Context ctx, String packageName)
+            throws PackageManager.NameNotFoundException {
         @SuppressLint("PackageManagerGetSignatures")
         Signature[] signatures =
                 ctx.getPackageManager()
@@ -43,23 +40,19 @@ public final class Util {
         return result;
     }
 
-    @Deprecated // todo replace me please
+    // from SO answer: https://stackoverflow.com/a/9855338/3050249
+    private static final char[] HexAlphabet = "0123456789ABCDEF".toCharArray();
     private static String toHex(byte[] bytes) {
-        BigInteger bi = new BigInteger(1, bytes);
-        return String.format("%0" + (bytes.length << 1) + "X", bi);
-    }
-
-    /*pkg*/ static boolean isAppInstalled(Context context, String appId) {
-        PackageManager pm = context.getPackageManager();
-        try {
-            pm.getPackageInfo(appId, 0); // todo check if works, was GET ACTIVITIES
-            return true;
-        } catch (PackageManager.NameNotFoundException ignored) {
+        char[] hexChars = new char[bytes.length * 2];
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = HexAlphabet[v >>> 4];
+            hexChars[j * 2 + 1] = HexAlphabet[v & 0x0F];
         }
-        return false;
+        return new String(hexChars);
     }
 
-    @Nullable
+    @Nullable // from VK SDK
     /*pkg*/ static Map<String, String> explodeQueryString(@Nullable String queryString) {
         if (queryString == null) {
             return null;

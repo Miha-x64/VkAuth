@@ -2,8 +2,8 @@ package net.aquadc.vkauth;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.SparseArray;
 
@@ -11,36 +11,44 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static java.util.Collections.unmodifiableSet;
+import static java.util.EnumSet.of;
 import static net.aquadc.vkauth.Util.explodeQueryString;
 
 /**
  * Created by mike on 21.02.17
+ * Represents an app registered in VK. An entry point for performing auth.
  */
 
 public final class VkApp {
 
     // const
 
-    private static final String VK_APP_FINGERPRINT = "48761EEF50EE53AFC4CC9C5F10E6BDE7F8F5B82F";
-    private static final String VK_APP_PACKAGE_ID = "com.vkontakte.android";
-    private static final String VK_APP_AUTH_ACTION = "com.vkontakte.android.action.SDK_AUTH";
-    private static final String VK_EXTRA_TOKEN_DATA = "extra-token-data";
-    private static final String VK_API_VERSION = "5.62";
+    /*pkg*/ static final String VkAppFingerprint = "48761EEF50EE53AFC4CC9C5F10E6BDE7F8F5B82F";
+    /*pkg*/ static final String VkAppPackageId = "com.vkontakte.android";
+    /*pkg*/ static final String VkAppAuthAction = "com.vkontakte.android.action.SDK_AUTH";
+    private static final String VkExtraTokenData = "extra-token-data";
+    private static final String VkApiVersion = "5.62";
 
-    private static final int RC_VK_AUTH = 30_109;
+    /*pkg*/ static final int RcVkAuth = 30_109;
+
+    private static final Set<AuthenticationWay> VkAppInstalled =
+            unmodifiableSet(of(AuthenticationWay.OfficialVkApp, AuthenticationWay.WebView, AuthenticationWay.Auto));
+    private static final Set<AuthenticationWay> VkAppNotInstalled =
+            unmodifiableSet(of(AuthenticationWay.WebView, AuthenticationWay.Auto));
 
     // static
 
-    private static final SparseArray<VkApp> instances = new SparseArray<>(1);
+    private static final SparseArray<VkApp> Instances = new SparseArray<>(1);
 
     public static VkApp getInstance(int appId) {
         if (appId <= 0) throw new IllegalArgumentException("invalid appId: " + appId);
 
-        synchronized (instances) {
-            VkApp app = instances.get(appId);
+        synchronized (Instances) {
+            VkApp app = Instances.get(appId);
             if (app == null) {
                 app = new VkApp(appId);
-                instances.put(appId, app);
+                Instances.put(appId, app);
             }
             return app;
         }
@@ -57,62 +65,65 @@ public final class VkApp {
         this.appId = appId;
     }
 
-    public void login(WaitingForResult receiver, Set<VkScope> scope) {
+    /**
+     * Returns a set of available authentication ways.
+     * @return returned set may contain {@link AuthenticationWay#OfficialVkApp},
+     * and will always contain {@link AuthenticationWay#WebView} and {@link AuthenticationWay#Auto}.
+     */
+    public Set<AuthenticationWay> getAvailableAuthenticationWays(Context context) {
+        if (AuthenticationWay.OfficialVkApp.isAvailable(context)) return VkAppInstalled;
+        else return VkAppNotInstalled;
+    }
+
+    /**
+     * Perform auth from Activity.
+     * @param receiver          caller activity
+     * @param scope             permissions
+     * @param authenticationWay way of authentication: Official App, WebView, or decide automatically
+     */
+    public /* <T extends Activity & WaitingForResult> won't compile :'( */
+    void login(WaitingForResult receiver, Set<VkScope> scope, AuthenticationWay authenticationWay) {
+        login((Activity) receiver, receiver, scope, authenticationWay);
+    }
+
+    /**
+     * Perform auth from a Fragment.
+     * @param receiver          caller fragment
+     * @param scope             permissions
+     * @param authenticationWay way of authentication: Official App, WebView, or decide automatically
+     */
+    public <T extends Fragment & WaitingForResult> void login(T receiver, Set<VkScope> scope, AuthenticationWay authenticationWay) {
+        login(receiver.getActivity(), receiver, scope, authenticationWay);
+    }
+
+    private void login(Context context, WaitingForResult receiver, Set<VkScope> scope, AuthenticationWay authenticationWay) {
+        if (context == null) throw new NullPointerException("context is required");
         if (receiver == null) throw new NullPointerException("receiver is required");
         if (!(receiver instanceof Activity || receiver instanceof Fragment)) {
             throw new IllegalArgumentException(
                     "receiver is expected to be a subclass of either android.app.Activity" +
                             " or android.app.Fragment, got " +
-                            receiver.getClass().getSimpleName());
+                            receiver.getClass().getName());
         }
         if (scope == null) throw new NullPointerException("scope is required");
+        if (authenticationWay == null) throw new NullPointerException("authenticationWay is required");
 
         Bundle extras = new Bundle(4);
-        extras.putString("version", VK_API_VERSION);
+        extras.putString("version", VkApiVersion);
         extras.putInt("client_id", appId);
         extras.putBoolean("revoke", true); // don't know why, just like in original SDK
         extras.putString("scope", VkScope.joined(scope));
 
-        Intent intent = new Intent(VK_APP_AUTH_ACTION, null);
-        intent.setPackage(VK_APP_PACKAGE_ID);
-        Activity activity = receiver instanceof Activity
-                ? (Activity) receiver : ((Fragment) receiver).getActivity();
-        if (activity.getPackageManager()
-                .queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY).isEmpty()) {
-            // app is not installed
-            performWebViewAuth(receiver, extras);
-            return;
+        if (!authenticationWay.isAvailable(context)) {
+            throw new IllegalStateException("Authentication way " + authenticationWay + " is unavailable.");
         }
-
-        try {
-            String[] certs = Util.getCertificateFingerprints(activity, VK_APP_PACKAGE_ID);
-            if (certs.length != 1 || !VK_APP_FINGERPRINT.equals(certs[0])) {
-                // todo complain about wrong VK app
-                performWebViewAuth(receiver, extras);
-                return;
-            }
-        } catch (PackageManager.NameNotFoundException e) {
-            throw new AssertionError("we've already ensured activity is resolved");
-        }
-
-        intent.putExtras(extras);
-        receiver.startActivityForResult(intent, RC_VK_AUTH);
-    }
-
-    private void performWebViewAuth(WaitingForResult receiver, Bundle extras) {
-        VkOAuthDialog dialog = new VkOAuthDialog();
-        extras.putInt("request code", RC_VK_AUTH);
-        dialog.setArguments(extras);
-        if (receiver instanceof Fragment) {
-            dialog.setTargetFragment((Fragment) receiver, 0);
-        }
-        dialog.show(receiver.getFragmentManager(), null);
+        authenticationWay.perform(context, receiver, extras);
     }
 
     public boolean onActivityResult(int requestCode, int resultCode, Intent data, VkAuthCallback callback) {
         if (callback == null) throw new NullPointerException("callback is required");
 
-        if (requestCode != RC_VK_AUTH) return false;
+        if (requestCode != RcVkAuth) return false;
 
         if (resultCode != Activity.RESULT_OK) {
             callback.onError();
@@ -126,9 +137,9 @@ public final class VkApp {
 
         Bundle extras = data.getExtras();
         Map<String, String> tokenParams = new HashMap<>();
-        if (extras.containsKey(VK_EXTRA_TOKEN_DATA)) {
+        if (extras.containsKey(VkExtraTokenData)) {
             // answer from WebView
-            String tokenInfo = extras.getString(VK_EXTRA_TOKEN_DATA);
+            String tokenInfo = extras.getString(VkExtraTokenData);
             tokenParams = explodeQueryString(tokenInfo);
         } else {
             // answer from VK app
@@ -137,7 +148,12 @@ public final class VkApp {
             }
         }
 
-        VkAccessToken newToken = new VkAccessToken(tokenParams);
+        VkAccessToken newToken = VkAccessToken.create(tokenParams);
+        if (newToken == null) {
+            callback.onError();
+            return false;
+        }
+
         synchronized (tokenLock) {
             if (currentToken == null) {
                 currentToken = newToken;
