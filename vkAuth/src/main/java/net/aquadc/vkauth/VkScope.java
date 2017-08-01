@@ -28,7 +28,7 @@ public enum VkScope {
     ADS("ads"),
     OFFLINE("offline"),
     EMAIL("email"),
-    NOHTTPS("nohttps"),
+    /** @deprecated can't see any reason to use it */ @Deprecated NOHTTPS("nohttps"),
     DIRECT("direct");
 
     private static final VkScope[] V = values();
