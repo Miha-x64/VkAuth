@@ -67,7 +67,7 @@ public final class VkAccessToken implements Parcelable {
 
         String createdStr = parameters.get(Created);
         long created;
-        if (createdStr != null) { // todo: check format
+        if (createdStr != null) { // won't arrive from App/WebView, only from another token
             try {
                 created = Long.parseLong(createdStr);
             } catch (NumberFormatException e) {
