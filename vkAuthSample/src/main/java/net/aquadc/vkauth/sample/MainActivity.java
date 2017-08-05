@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Set;
 
 public final class MainActivity extends AppCompatActivity
-        implements View.OnClickListener, WaitingForResult, VkApp.VkAuthCallback {
+        implements View.OnClickListener, VkApp.VkAuthCallback, VkApp.VkAuthCallbackProvider {
 
     private Map<AuthenticationWay, Button> buttons;
     private TextView output;
@@ -57,7 +57,7 @@ public final class MainActivity extends AppCompatActivity
     public void onClick(View v) {
         for (Map.Entry<AuthenticationWay, Button> entry : buttons.entrySet()) {
             if (entry.getValue() == v) { // find way of clicked button
-                VkApp.getInstance(BuildConfig.VK_APP_ID).login(this, EnumSet.noneOf(VkScope.class), entry.getKey());
+                VkApp.getInstance(BuildConfig.VK_APP_ID).login(this, EnumSet.noneOf(VkScope.class), entry.getKey(), getSupportFragmentManager());
                 return;
             }
         }
@@ -66,9 +66,14 @@ public final class MainActivity extends AppCompatActivity
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (!VkApp.getInstance(BuildConfig.VK_APP_ID).onActivityResult(requestCode, resultCode, data, this)) {
+        if (!VkApp.getInstance(BuildConfig.VK_APP_ID).onActivityResult(this, requestCode, resultCode, data)) {
             super.onActivityResult(requestCode, resultCode, data);
         }
+    }
+
+    @Override
+    public VkApp.VkAuthCallback getVkAuthCallback() {
+        return this;
     }
 
     @Override

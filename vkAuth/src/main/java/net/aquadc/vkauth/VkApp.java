@@ -1,10 +1,10 @@
 package net.aquadc.vkauth;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.SparseArray;
 
 import java.util.HashMap;
@@ -76,52 +76,80 @@ public final class VkApp {
     }
 
     /**
-     * Perform auth from Activity.
-     * @param receiver          caller activity
+     * Perform auth from android.app.Activity through native fragment.
+     * @param caller            Activity which implements VkAuthCallbackProvider
      * @param scope             permissions
-     * @param authenticationWay way of authentication: Official App, WebView, or decide automatically
+     * @param authenticationWay a way of authentication
+     * @param fragmentManager   a fragment manager
      */
-    public /* <T extends Activity & WaitingForResult> won't compile :'( */
-    void login(WaitingForResult receiver, Set<VkScope> scope, AuthenticationWay authenticationWay) {
-        login((Activity) receiver, receiver, scope, authenticationWay);
+    public <A extends Activity & VkAuthCallbackProvider> void login(A caller, Set<VkScope> scope, AuthenticationWay authenticationWay, android.app.FragmentManager fragmentManager) {
+        required(caller, "caller", scope, "scope", authenticationWay, "authenticationWay", fragmentManager, "fragmentManager");
+        authenticationWay.perform(caller, createRequestBundle(scope), fragmentManager);
     }
 
     /**
-     * Perform auth from a Fragment.
-     * @param receiver          caller fragment
+     * Perform auth from android.support.v7.app.AppCompatActivity through fragment back-port.
+     * @param caller            AppCompatActivity which implements VkAuthCallbackProvider
      * @param scope             permissions
-     * @param authenticationWay way of authentication: Official App, WebView, or decide automatically
+     * @param authenticationWay a way of authentication
+     * @param fragmentManager   a fragment manager
      */
-    public <T extends Fragment & WaitingForResult> void login(T receiver, Set<VkScope> scope, AuthenticationWay authenticationWay) {
-        login(receiver.getActivity(), receiver, scope, authenticationWay);
+    public <A extends AppCompatActivity & VkAuthCallbackProvider> void login(A caller, Set<VkScope> scope, AuthenticationWay authenticationWay, android.support.v4.app.FragmentManager fragmentManager) {
+        required(caller, "caller", scope, "scope", authenticationWay, "authenticationWay", fragmentManager, "fragmentManager");
+        authenticationWay.perform(caller, createRequestBundle(scope), fragmentManager);
     }
 
-    private void login(Context context, WaitingForResult receiver, Set<VkScope> scope, AuthenticationWay authenticationWay) {
-        if (context == null) throw new NullPointerException("context is required");
-        if (receiver == null) throw new NullPointerException("receiver is required");
-        if (!(receiver instanceof Activity || receiver instanceof Fragment)) {
-            throw new IllegalArgumentException(
-                    "receiver is expected to be a subclass of either android.app.Activity" +
-                            " or android.app.Fragment, got " +
-                            receiver.getClass().getName());
-        }
-        if (scope == null) throw new NullPointerException("scope is required");
-        if (authenticationWay == null) throw new NullPointerException("authenticationWay is required");
+    /**
+     * Perform auth from android.app.Fragment.
+     * @param caller            caller Fragment
+     * @param scope             permissions
+     * @param authenticationWay a way of authentication
+     * @param fragmentManager   a fragment manager
+     */
+    public void login(android.app.Fragment caller, Set<VkScope> scope, AuthenticationWay authenticationWay, android.app.FragmentManager fragmentManager) {
+        required(caller, "caller", caller.getActivity(), "caller.getActivity()", scope, "scope", authenticationWay, "authenticationWay");
+        authenticationWay.perform(caller, createRequestBundle(scope), fragmentManager);
+    }
 
-        Bundle extras = new Bundle(4);
+    /**
+     * Perform auth from android.support.v4.app.Fragment.
+     * @param caller            caller Fragment
+     * @param scope             permissions
+     * @param authenticationWay a way of authentication
+     * @param fragmentManager   a fragment manager
+     */
+    public void login(android.support.v4.app.Fragment caller, Set<VkScope> scope, AuthenticationWay authenticationWay, android.support.v4.app.FragmentManager fragmentManager) {
+        required(caller, "caller", caller.getActivity(), "caller.getActivity()", scope, "scope", authenticationWay, "authenticationWay");
+        authenticationWay.perform(caller, createRequestBundle(scope), fragmentManager);
+    }
+
+    private static void required(Object o, String name) {
+        if (o == null) throw new NullPointerException(name + " is required, null given");
+    }
+    private static void required(Object o0, String n0, Object o1, String n1) {
+        required(o0, n0);
+        required(o1, n1);
+    }
+    private static void required(Object o0, String n0, Object o1, String n1, Object o2, String n2, Object o3, String n3) {
+        required(o0, n0);
+        required(o1, n1);
+        required(o2, n2);
+        required(o3, n3);
+    }
+
+    private Bundle createRequestBundle(Set<VkScope> scope) {
+        Bundle extras = new Bundle(5);
         extras.putString("version", VkApiVersion);
         extras.putInt("client_id", appId);
         extras.putBoolean("revoke", true); // don't know why, just like in original SDK
         extras.putString("scope", VkScope.joined(scope));
-
-        if (!authenticationWay.isAvailable(context)) {
-            throw new IllegalStateException("Authentication way " + authenticationWay + " is unavailable.");
-        }
-        authenticationWay.perform(context, receiver, extras);
+        return extras;
     }
 
-    public boolean onActivityResult(int requestCode, int resultCode, Intent data, VkAuthCallback callback) {
-        if (callback == null) throw new NullPointerException("callback is required");
+    public <T extends Activity & VkAuthCallbackProvider> boolean onActivityResult(
+            T caller, int requestCode, int resultCode, Intent data) {
+        VkAuthCallback callback;
+        required(caller, "caller", callback = caller.getVkAuthCallback(), "caller.getVkAuthCallback()");
 
         if (requestCode != RcVkAuth) return false;
 
@@ -166,6 +194,9 @@ public final class VkApp {
         return true;
     }
 
+    public interface VkAuthCallbackProvider {
+        VkAuthCallback getVkAuthCallback();
+    }
     public interface VkAuthCallback {
         void onResult(VkAccessToken token);
         void onError();
