@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.support.annotation.Nullable;
+import android.util.DisplayMetrics;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -64,6 +65,25 @@ import java.util.Map;
             parameters.put(keyValueArray[0], keyValueArray[1]);
         }
         return parameters;
+    }
+
+    /*pkg*/ static int dp(Context context, int dp) {
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+        return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
+    }
+
+    /*pkg*/ static void required(Object o, String name) {
+        if (o == null) throw new NullPointerException(name + " is required, null given");
+    }
+    /*pkg*/ static void required(Object o0, String n0, Object o1, String n1) {
+        required(o0, n0);
+        required(o1, n1);
+    }
+    /*pkg*/ static void required(Object o0, String n0, Object o1, String n1, Object o2, String n2, Object o3, String n3) {
+        required(o0, n0);
+        required(o1, n1);
+        required(o2, n2);
+        required(o3, n3);
     }
 
 }

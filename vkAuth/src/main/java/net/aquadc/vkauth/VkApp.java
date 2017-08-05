@@ -14,6 +14,7 @@ import java.util.Set;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.EnumSet.of;
 import static net.aquadc.vkauth.Util.explodeQueryString;
+import static net.aquadc.vkauth.Util.required;
 
 /**
  * Created by mike on 21.02.17
@@ -121,20 +122,6 @@ public final class VkApp {
     public void login(android.support.v4.app.Fragment caller, Set<VkScope> scope, AuthenticationWay authenticationWay, android.support.v4.app.FragmentManager fragmentManager) {
         required(caller, "caller", caller.getActivity(), "caller.getActivity()", scope, "scope", authenticationWay, "authenticationWay");
         authenticationWay.perform(caller, createRequestBundle(scope), fragmentManager);
-    }
-
-    private static void required(Object o, String name) {
-        if (o == null) throw new NullPointerException(name + " is required, null given");
-    }
-    private static void required(Object o0, String n0, Object o1, String n1) {
-        required(o0, n0);
-        required(o1, n1);
-    }
-    private static void required(Object o0, String n0, Object o1, String n1, Object o2, String n2, Object o3, String n3) {
-        required(o0, n0);
-        required(o1, n1);
-        required(o2, n2);
-        required(o3, n3);
     }
 
     private Bundle createRequestBundle(Set<VkScope> scope) {

@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import static net.aquadc.vkauth.Util.required;
+
 /**
  * Created by mike on 21.02.17
  */
@@ -40,7 +42,7 @@ public enum VkScope {
     }
 
     public static Set<VkScope> asSet(VkScope... scope) {
-        if (scope == null) throw new NullPointerException("scope is required");
+        required(scope, "scope");
         if (scope.length == 0) return EnumSet.noneOf(VkScope.class);
         return EnumSet.copyOf(Arrays.asList(scope));
     }

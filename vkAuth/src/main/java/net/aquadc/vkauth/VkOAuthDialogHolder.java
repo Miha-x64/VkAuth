@@ -12,7 +12,6 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +26,7 @@ import java.net.URLEncoder;
 import java.util.Locale;
 import java.util.Map;
 
+import static net.aquadc.vkauth.Util.dp;
 import static net.aquadc.vkauth.Util.explodeQueryString;
 
 /**
@@ -61,7 +61,7 @@ import static net.aquadc.vkauth.Util.explodeQueryString;
     /*pkg*/ VkOAuthDialogHolder(Context context, Bundle arguments, Bundle savedInstanceState, Host host) {
         this.root = new FrameLayout(context);
         root.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        int tenDp = dp(10);
+        int tenDp = dp(context, 10);
         root.setPadding(tenDp, tenDp, tenDp, tenDp);
 
         this.progress = new ProgressBar(context);
@@ -88,11 +88,6 @@ import static net.aquadc.vkauth.Util.explodeQueryString;
         }
 
         loadPage();
-    }
-
-    private int dp(int dp) {
-        DisplayMetrics displayMetrics = root.getContext().getResources().getDisplayMetrics();
-        return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
     }
 
     @SuppressLint("SetJavaScriptEnabled")
