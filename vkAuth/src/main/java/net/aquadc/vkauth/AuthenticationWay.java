@@ -36,7 +36,7 @@ public enum AuthenticationWay {
             return true;
         }
 
-        @Override <T extends Activity & VkAuthCallbackProvider> void perform(T caller, Bundle extras, android.app.FragmentManager fragmentManager) {
+        @Override void perform(Activity caller, Bundle extras, android.app.FragmentManager fragmentManager) {
             if (!isAvailable(caller)) throw new IllegalStateException("Official VK app is unavailable.");
             caller.startActivityForResult(createIntent(extras), RcVkAuth);
         }
@@ -61,7 +61,7 @@ public enum AuthenticationWay {
         }
     },
     WebView {
-        @Override <T extends Activity & VkAuthCallbackProvider> void perform(T caller, Bundle extras, android.app.FragmentManager fragmentManager) {
+        @Override void perform(Activity caller, Bundle extras, android.app.FragmentManager fragmentManager) {
             android.app.DialogFragment dialog = new VkOAuthDialogHolder.NativeFragment();
             dialog.setArguments(augumented(extras));
             dialog.show(fragmentManager, null);
@@ -94,7 +94,7 @@ public enum AuthenticationWay {
         }
     },
     Auto {
-        @Override <T extends Activity & VkAuthCallbackProvider> void perform(T caller, Bundle extras, android.app.FragmentManager fragmentManager) {
+        @Override void perform(Activity caller, Bundle extras, android.app.FragmentManager fragmentManager) {
             if (OfficialVkApp.isAvailable(caller)) OfficialVkApp.perform(caller, extras, fragmentManager);
             else WebView.perform(caller, extras, fragmentManager);
         }
@@ -115,7 +115,7 @@ public enum AuthenticationWay {
     public boolean isAvailable(Context context) {
         return true;
     }
-    /*pkg*/ abstract <T extends Activity & VkAuthCallbackProvider> void perform(T caller, Bundle extras, android.app.FragmentManager fragmentManager);
+    /*pkg*/ abstract void perform(Activity caller, Bundle extras, android.app.FragmentManager fragmentManager);
     /*pkg*/ abstract void perform(AppCompatActivity caller, Bundle extras, android.support.v4.app.FragmentManager fragmentManager);
     /*pkg*/ abstract void perform(android.app.Fragment caller, Bundle extras, android.app.FragmentManager fragmentManager);
     /*pkg*/ abstract void perform(android.support.v4.app.Fragment caller, Bundle extras, android.support.v4.app.FragmentManager fragmentManager);

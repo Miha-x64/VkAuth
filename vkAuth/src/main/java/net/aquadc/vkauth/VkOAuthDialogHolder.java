@@ -142,11 +142,7 @@ import static net.aquadc.vkauth.Util.explodeQueryString;
     /*pkg*/ void deliverResultToActivity(Activity activity) {
         VkApp
                 .getInstance(arguments.getInt(VK_EXTRA_CLIENT_ID))
-                .onActivityResult(cast(activity), arguments.getInt("request code"), resultCode, data);
-    }
-
-    private static <T extends Activity & VkApp.VkAuthCallbackProvider> T cast(Activity activity) {
-        return (T) activity;
+                .onActivityResult(arguments.getInt("request code"), resultCode, data, ((VkApp.VkAuthCallbackProvider) activity).getVkAuthCallback());
     }
 
     private interface Host {

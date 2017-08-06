@@ -133,10 +133,8 @@ public final class VkApp {
         return extras;
     }
 
-    public <T extends Activity & VkAuthCallbackProvider> boolean onActivityResult(
-            T caller, int requestCode, int resultCode, Intent data) {
-        VkAuthCallback callback;
-        required(caller, "caller", callback = caller.getVkAuthCallback(), "caller.getVkAuthCallback()");
+    public boolean onActivityResult(int requestCode, int resultCode, Intent data, VkAuthCallback callback) {
+        required(callback, "callback");
 
         if (requestCode != RcVkAuth) return false;
 
