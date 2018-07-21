@@ -1,4 +1,3 @@
 <resources>
-    <string name="app_name">VkAuth</string>
     <string name="vk_retry">Retry</string>
 </resources>
