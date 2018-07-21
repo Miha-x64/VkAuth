@@ -242,7 +242,8 @@ import static net.aquadc.vkauth.Util.explodeQueryString;
         }
     }
 
-    private static class OAuthWebViewClient extends WebViewClient {
+    private static final class OAuthWebViewClient extends WebViewClient
+            implements DialogInterface.OnClickListener, DialogInterface.OnCancelListener {
         boolean canShowPage = true;
         final Host host;
 
@@ -302,22 +303,34 @@ import static net.aquadc.vkauth.Util.explodeQueryString;
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
             canShowPage = false;
             AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext())
-                    .setMessage(description)
-                    .setPositiveButton(R.string.vk_retry, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            host.getHolder().loadPage();
-                        }
-                    })
-                    .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            host.dismiss();
-                        }
-                    });
+                    .setMessage(view.getResources().getString(R.string.vk_webView_error) + '\n' + description)
+                    .setPositiveButton(R.string.vk_retry, this)
+                    .setNegativeButton(android.R.string.cancel, this)
+                    .setOnCancelListener(this);
 
             builder.show(); // was in try-catch O_o
 
+        }
+
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            switch (which) {
+                case DialogInterface.BUTTON_NEGATIVE:
+                    host.dismiss();
+                    break;
+
+                case DialogInterface.BUTTON_POSITIVE:
+                    host.getHolder().loadPage();
+                    break;
+
+                default:
+                    throw new AssertionError();
+            }
+        }
+
+        @Override
+        public void onCancel(DialogInterface dialog) {
+            host.dismiss();
         }
     }
 }
