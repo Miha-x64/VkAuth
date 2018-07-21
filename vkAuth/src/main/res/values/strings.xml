@@ -1,3 +1,4 @@
 <resources>
     <string name="vk_retry">Retry</string>
+    <string name="vk_webView_error">An error occurred. Check your connection and try again.</string>
 </resources>

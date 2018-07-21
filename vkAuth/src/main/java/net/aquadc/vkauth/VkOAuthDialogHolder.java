@@ -22,6 +22,7 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Locale;
 import java.util.Map;
@@ -32,7 +33,7 @@ import static net.aquadc.vkauth.Util.explodeQueryString;
 /**
  * Created by mike on 21.02.17
  */
-
+@SuppressWarnings("WeakerAccess")
 /*pkg*/ final class VkOAuthDialogHolder {
 
     private static final String VK_EXTRA_CLIENT_ID = "client_id";
@@ -90,7 +91,7 @@ import static net.aquadc.vkauth.Util.explodeQueryString;
         loadPage();
     }
 
-    @SuppressLint("SetJavaScriptEnabled")
+    @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     /*pkg*/ void loadPage() {
         try {
             Bundle parameters = arguments;
@@ -130,8 +131,8 @@ import static net.aquadc.vkauth.Util.explodeQueryString;
             webView.setVisibility(View.INVISIBLE);
             webView.setOverScrollMode(WebView.OVER_SCROLL_NEVER);
             progress.setVisibility(View.VISIBLE);
-        } catch (Exception e) {
-            host.setResultAndFinish(Activity.RESULT_CANCELED, null);
+        } catch (UnsupportedEncodingException e) {
+            throw new AssertionError(e);
         }
     }
 
@@ -281,7 +282,6 @@ import static net.aquadc.vkauth.Util.explodeQueryString;
 
         @Override
         public void onPageFinished(WebView view, String url) {
-            super.onPageFinished(view, url);
             if (canShowPage) {
                 VkOAuthDialogHolder holder = host.getHolder();
                 holder.progress.setVisibility(View.GONE);
@@ -300,7 +300,6 @@ import static net.aquadc.vkauth.Util.explodeQueryString;
 
         @Override @SuppressWarnings("deprecation")
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-            super.onReceivedError(view, errorCode, description, failingUrl);
             canShowPage = false;
             AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext())
                     .setMessage(description)
