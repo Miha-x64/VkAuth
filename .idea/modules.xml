@@ -2,7 +2,21 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../Tie/Tie.iml" filepath="$PROJECT_DIR$/../Tie/Tie.iml" />
       <module fileurl="file://$PROJECT_DIR$/VkAuth.iml" filepath="$PROJECT_DIR$/VkAuth.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../IdeaProjects/Blitz/blitz.iml" filepath="$PROJECT_DIR$/../../IdeaProjects/Blitz/blitz.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Tie/common/common.iml" filepath="$PROJECT_DIR$/../Tie/common/common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Tie/commonAndroid/commonAndroid.iml" filepath="$PROJECT_DIR$/../Tie/commonAndroid/commonAndroid.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Tie/greenDaoModels/greenDaoModels.iml" filepath="$PROJECT_DIR$/../Tie/greenDaoModels/greenDaoModels.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Tie/greenEnvImpl/greenEnvImpl.iml" filepath="$PROJECT_DIR$/../Tie/greenEnvImpl/greenEnvImpl.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../GreenReactive/greenLiveLists/greenLiveLists.iml" filepath="$PROJECT_DIR$/../GreenReactive/greenLiveLists/greenLiveLists.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../GreenReactive/liveLists/liveLists.iml" filepath="$PROJECT_DIR$/../GreenReactive/liveLists/liveLists.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../GreenReactive/liveListsAndroid/liveListsAndroid.iml" filepath="$PROJECT_DIR$/../GreenReactive/liveListsAndroid/liveListsAndroid.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Tie/netVk/netVk.iml" filepath="$PROJECT_DIR$/../Tie/netVk/netVk.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Tie/socialAndroid/socialAndroid.iml" filepath="$PROJECT_DIR$/../Tie/socialAndroid/socialAndroid.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Tie/socialCore/socialCore.iml" filepath="$PROJECT_DIR$/../Tie/socialCore/socialCore.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Tie/tieApp/tieApp.iml" filepath="$PROJECT_DIR$/../Tie/tieApp/tieApp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Tie/tieСontroller/tieСontroller.iml" filepath="$PROJECT_DIR$/../Tie/tieСontroller/tieСontroller.iml" />
       <module fileurl="file://$PROJECT_DIR$/vkAuth/vkAuth.iml" filepath="$PROJECT_DIR$/vkAuth/vkAuth.iml" />
       <module fileurl="file://$PROJECT_DIR$/vkAuthSample/vkAuthSample.iml" filepath="$PROJECT_DIR$/vkAuthSample/vkAuthSample.iml" />
     </modules>
