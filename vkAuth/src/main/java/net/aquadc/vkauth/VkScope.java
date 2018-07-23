@@ -76,7 +76,7 @@ public enum VkScope {
         StringBuilder sb = new StringBuilder();
         Iterator<VkScope> it = set.iterator();
         if (it.hasNext()) {
-            sb.append(it.next());
+            sb.append(it.next().scopeName);
             while (it.hasNext()) {
                 sb.append(',');
                 sb.append(it.next().scopeName);

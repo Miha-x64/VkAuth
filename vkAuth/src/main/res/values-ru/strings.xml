@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="vk_retry">Попробовать снова</string>
-    <string name="vk_webView_error">Произошла обишка. Проверьте подключение к интернету и попробуйте снова.</string>
+    <string name="vk_webView_error">Произошла ошибка. Проверьте подключение к интернету и попробуйте снова.</string>
 </resources>
