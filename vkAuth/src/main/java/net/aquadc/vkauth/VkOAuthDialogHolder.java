@@ -166,11 +166,6 @@ import static net.aquadc.vkauth.Util.explodeQueryString;
             holder.onSaveInstanceState(outState);
         }
 
-        @Override public void onCancel(DialogInterface dialog) {
-            super.onCancel(dialog);
-            deliverResult();
-        }
-
         @Override public void onDismiss(DialogInterface dialog) {
             super.onDismiss(dialog);
             deliverResult();
@@ -209,11 +204,6 @@ import static net.aquadc.vkauth.Util.explodeQueryString;
         @Override public void onSaveInstanceState(Bundle outState) {
             super.onSaveInstanceState(outState);
             holder.onSaveInstanceState(outState);
-        }
-
-        @Override public void onCancel(DialogInterface dialog) {
-            super.onCancel(dialog);
-            deliverResult();
         }
 
         @Override public void onDismiss(DialogInterface dialog) {
