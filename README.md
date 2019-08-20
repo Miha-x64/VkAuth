@@ -1,6 +1,8 @@
 # VkAuth
 
-Authentication library for VK and Android.
+VK authentication library for Android.
+
+[![](https://jitpack.io/v/TieToGather/VkAuth.svg)](https://jitpack.io/#TieToGather/VkAuth)
 
 * Much more lightweight than
 [Official SDK](https://github.com/VKCOM/vk-android-sdk);
