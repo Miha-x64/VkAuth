@@ -1,6 +1,6 @@
-# VkAuth
+# VkAuth [![](https://jitpack.io/v/TieToGather/VkAuth.svg)](https://jitpack.io/#TieToGather/VkAuth)
 
-Authentication library for VK and Android.
+VK authentication library for Android.
 
 * Much more lightweight than
 [Official SDK](https://github.com/VKCOM/vk-android-sdk);
@@ -40,7 +40,7 @@ public final class AuthActivity extends AppCompatActivity
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (!VkApp.getInstance(BuildConfig.VK_APP_ID).onActivityResult(this, requestCode, resultCode, data)) {
+        if (!VkApp.getInstance(BuildConfig.VK_APP_ID).onActivityResult(requestCode, resultCode, data, this)) {
             super.onActivityResult(requestCode, resultCode, data);
         }
     }
