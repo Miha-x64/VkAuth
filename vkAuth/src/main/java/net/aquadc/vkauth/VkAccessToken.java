@@ -9,7 +9,7 @@ import android.text.TextUtils;
 import java.util.*;
 
 /**
- * Presents VK API access token that used for loading API methods and other stuff.
+ * VK API access token for invoking API methods.
  */
 public final class VkAccessToken implements Parcelable {
 
@@ -21,27 +21,13 @@ public final class VkAccessToken implements Parcelable {
     private static final String Email = "email";
     private static final String Scope = "scope";
 
-    // String token for use in request parameters
-    private final String accessToken;
-
-    // Seconds from 'created' when token will expire
-    private final int expiresIn;
-
-    // Current user id for this token
-    private final String userId;
-
-    // User secret to sign requests (if nohttps used)
-    @Nullable
-    private final String secret;
-
-    // Indicates time of token creation
-    private final long created; // millis
-
-    // User email
-    private final String email;
-
-    // Token scope
-    private final Set<VkScope> scope;
+    @NonNull private final String accessToken;
+    private final int ttlSeconds;
+    @NonNull private final String userId;
+    @Nullable private final String secret;
+    private final long creationTimeMillis;
+    @Nullable private final String email;
+    @NonNull private final Set<VkScope> scope;
 
     @Nullable
     /*pkg*/ static VkAccessToken create(@Nullable Map<String, String> parameters) {
@@ -94,13 +80,13 @@ public final class VkAccessToken implements Parcelable {
         return new VkAccessToken(accessToken, expiresIn, userId, secret, created, email, scope);
     }
 
-    private VkAccessToken(String accessToken, int expiresIn, String userId, @Nullable String secret, long created,
-                          @Nullable String email, Set<VkScope> scope) {
+    private VkAccessToken(@NonNull String accessToken, int ttlSeconds, @NonNull String userId, @Nullable String secret,
+                          long creationTimeMillis, @Nullable String email, @NonNull Set<VkScope> scope) {
         this.accessToken = accessToken;
-        this.expiresIn = expiresIn;
+        this.ttlSeconds = ttlSeconds;
         this.userId = userId;
         this.secret = secret;
-        this.created = created;
+        this.creationTimeMillis = creationTimeMillis;
         this.email = email;
         this.scope = scope;
     }
@@ -108,10 +94,10 @@ public final class VkAccessToken implements Parcelable {
     private Map<String, String> tokenParams() {
         Map<String, String> params = new HashMap<>();
         params.put(AccessToken, accessToken);
-        params.put(ExpiresIn, "" + expiresIn);
+        params.put(ExpiresIn, "" + ttlSeconds);
         params.put(UserId, userId);
-        params.put(Created, "" + created);
-        if (scope != null) {
+        params.put(Created, "" + creationTimeMillis);
+        if (!scope.isEmpty()) {
             params.put(Scope, TextUtils.join(",", scope));
         }
 
@@ -124,17 +110,35 @@ public final class VkAccessToken implements Parcelable {
         return params;
     }
 
-    public String getAccessToken() {
+    @NonNull public String getAccessToken() {
         return accessToken;
     }
 
-    @Nullable
-    public String getSecret() {
+    public boolean isValid() {
+        return !(ttlSeconds > 0 && ttlSeconds * 1000 + creationTimeMillis < System.currentTimeMillis());
+    }
+
+    @NonNull public String getUserId() {
+        return userId;
+    }
+
+    /**
+     * @deprecated useless thing for 'nohttps', should be avoided
+     */
+    @Nullable public String getSecret() {
         return secret;
     }
 
-    public boolean isValid() {
-        return !(expiresIn > 0 && expiresIn * 1000 + created < System.currentTimeMillis());
+    @NonNull public Date getExpiryDate() {
+        return new Date(creationTimeMillis + 1000 * ttlSeconds);
+    }
+
+    @Nullable public String getEmail() {
+        return email;
+    }
+
+    @NonNull public Set<VkScope> getScope() {
+        return scope;
     }
 
     @Nullable
@@ -148,17 +152,13 @@ public final class VkAccessToken implements Parcelable {
     public String toString() {
         return "VKAccessToken{" +
                 "accessToken='" + accessToken + '\'' +
-                ", expiresIn=" + expiresIn +
+                ", expiresIn=" + ttlSeconds +
                 ", userId='" + userId + '\'' +
                 ", secret='" + secret + '\'' +
-                ", created=" + created +
+                ", created=" + creationTimeMillis +
                 ", email='" + email + '\'' +
                 ", scope=" + scope +
                 '}';
-    }
-
-    public Date getExpiryDate() {
-        return new Date(created + 1000 * expiresIn);
     }
 
 
@@ -167,33 +167,32 @@ public final class VkAccessToken implements Parcelable {
     }
     @Override public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(this.accessToken);
-        dest.writeInt(this.expiresIn);
+        dest.writeInt(this.ttlSeconds);
         dest.writeString(this.userId);
         dest.writeString(this.secret);
-        dest.writeLong(this.created);
+        dest.writeLong(this.creationTimeMillis);
         dest.writeString(this.email);
         dest.writeInt(scope.size());
         for (VkScope s : scope) {
             dest.writeString(s.scopeName);
         }
     }
-    /*pkg*/ VkAccessToken(Parcel in) {
-        this.accessToken = in.readString();
-        this.expiresIn = in.readInt();
-        this.userId = in.readString();
-        this.secret = in.readString();
-        this.created = in.readLong();
-        this.email = in.readString();
-        int size = in.readInt();
-        String[] scope = new String[size];
-        for (int i = 0; i < size; i++) {
-            scope[i] = in.readString();
-        }
-        this.scope = VkScope.asSet(scope);
-    }
     public static final Creator<VkAccessToken> CREATOR = new Creator<VkAccessToken>() {
-        @Override public VkAccessToken createFromParcel(Parcel source) {
-            return new VkAccessToken(source);
+        @Override public VkAccessToken createFromParcel(Parcel in) {
+            String accessToken = in.readString();
+            int ttlSeconds = in.readInt();
+            String userId = in.readString();
+            String secret = in.readString();
+            long creationTimeMillis = in.readLong();
+            String email = in.readString();
+            int size = in.readInt();
+            String[] scope = new String[size];
+            for (int i = 0; i < size; i++) {
+                scope[i] = in.readString();
+            }
+            return new VkAccessToken(
+                    accessToken, ttlSeconds, userId, secret, creationTimeMillis, email, VkScope.asSet(scope)
+            );
         }
         @Override public VkAccessToken[] newArray(int size) {
             return new VkAccessToken[size];
