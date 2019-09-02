@@ -3,6 +3,7 @@ package net.aquadc.vkauth;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.SparseArray;
@@ -23,15 +24,13 @@ import static net.aquadc.vkauth.Util.required;
 
 public final class VkApp {
 
-    // const
-
-    /*pkg*/ static final String VkAppFingerprint = "48761EEF50EE53AFC4CC9C5F10E6BDE7F8F5B82F";
-    /*pkg*/ static final String VkAppPackageId = "com.vkontakte.android";
-    /*pkg*/ static final String VkAppAuthAction = "com.vkontakte.android.action.SDK_AUTH";
     private static final String VkExtraTokenData = "extra-token-data";
     private static final String VkApiVersion = "5.62";
 
     /*pkg*/ static final int RcVkAuth = 30_109;
+
+    private static final Intent AuthIntent =
+            new Intent("com.vkontakte.android.action.SDK_AUTH").setPackage("com.vkontakte.android");
 
     private static final Set<AuthenticationWay> VkAppInstalled =
             unmodifiableSet(of(AuthenticationWay.OfficialVkApp, AuthenticationWay.WebView, AuthenticationWay.Auto));
@@ -53,6 +52,30 @@ public final class VkApp {
             }
             return app;
         }
+    }
+
+    /*pkg*/ static boolean isInstalled(Context context) {
+        if (context.getPackageManager().queryIntentActivities(AuthIntent, PackageManager.MATCH_DEFAULT_ONLY).isEmpty()) {
+            return false;
+        }
+
+        try {
+            String[] certs = Util.getCertificateFingerprints(context, AuthIntent.getPackage());
+            if (certs.length != 1 || !"48761EEF50EE53AFC4CC9C5F10E6BDE7F8F5B82F".equals(certs[0])) {
+                // todo complain about wrong VK app
+                return false;
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new AssertionError(); // we've already ensured activity is resolved
+        }
+
+        return true;
+    }
+
+    /*pkg*/ static Intent createAuthIntent(Bundle extras) {
+        Intent intent = new Intent(AuthIntent);
+        intent.putExtras(extras);
+        return intent;
     }
 
     // instance

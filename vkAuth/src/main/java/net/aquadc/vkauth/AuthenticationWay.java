@@ -3,8 +3,6 @@ package net.aquadc.vkauth;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
@@ -12,52 +10,29 @@ import android.support.v7.app.AppCompatActivity;
 import static net.aquadc.vkauth.VkApp.*;
 
 /**
- * Way of authentification.
+ * Way of authentication.
  */
 public enum AuthenticationWay {
     OfficialVkApp {
         @Override public boolean isAvailable(Context context) {
-            Intent intent = new Intent(VkAppAuthAction, null);
-            intent.setPackage(VkAppPackageId);
-            if (context.getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY).isEmpty()) {
-                return false;
-            }
-
-            try {
-                String[] certs = Util.getCertificateFingerprints(context, VkAppPackageId);
-                if (certs.length != 1 || !VkAppFingerprint.equals(certs[0])) {
-                    // todo complain about wrong VK app
-                    return false;
-                }
-            } catch (PackageManager.NameNotFoundException e) {
-                throw new AssertionError("we've already ensured activity is resolved");
-            }
-
-            return true;
+            return VkApp.isInstalled(context);
         }
 
         @Override void perform(Activity caller, Bundle extras, android.app.FragmentManager fragmentManager) {
             if (!isAvailable(caller)) throw new IllegalStateException("Official VK app is unavailable.");
-            caller.startActivityForResult(createIntent(extras), RcVkAuth);
+            caller.startActivityForResult(createAuthIntent(extras), RcVkAuth);
         }
         @Override void perform(AppCompatActivity caller, Bundle extras, android.support.v4.app.FragmentManager fragmentManager) {
             if (!isAvailable(caller)) throw new IllegalStateException("Official VK app is unavailable.");
-            caller.startActivityForResult(createIntent(extras), RcVkAuth);
+            caller.startActivityForResult(createAuthIntent(extras), RcVkAuth);
         }
         @Override void perform(android.app.Fragment caller, Bundle extras, android.app.FragmentManager fragmentManager) {
             if (!isAvailable(caller.getActivity())) throw new IllegalStateException("Official VK app is unavailable.");
-            caller.startActivityForResult(createIntent(extras), RcVkAuth);
+            caller.startActivityForResult(createAuthIntent(extras), RcVkAuth);
         }
         @Override void perform(android.support.v4.app.Fragment caller, Bundle extras, android.support.v4.app.FragmentManager fragmentManager) {
             if (!isAvailable(caller.getActivity())) throw new IllegalStateException("Official VK app is unavailable.");
-            caller.startActivityForResult(createIntent(extras), RcVkAuth);
-        }
-
-        private Intent createIntent(Bundle extras) {
-            Intent intent = new Intent(VkAppAuthAction, null);
-            intent.setPackage(VkAppPackageId);
-            intent.putExtras(extras);
-            return intent;
+            caller.startActivityForResult(createAuthIntent(extras), RcVkAuth);
         }
     },
     WebView {
