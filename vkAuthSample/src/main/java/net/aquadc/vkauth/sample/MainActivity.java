@@ -2,19 +2,16 @@ package net.aquadc.vkauth.sample;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.IdRes;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.IdRes;
+import androidx.appcompat.app.AppCompatActivity;
 import net.aquadc.vkauth.*;
 
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public final class MainActivity extends AppCompatActivity
         implements View.OnClickListener, VkApp.VkAuthCallback, VkApp.VkAuthCallbackProvider {
@@ -32,11 +29,11 @@ public final class MainActivity extends AppCompatActivity
         buttons.put(AuthenticationWay.WebView, withOnClick(R.id.webViewAuth));
         buttons.put(AuthenticationWay.Auto, withOnClick(R.id.autoAuth));
 
-        output = (TextView) findViewById(R.id.output);
+        output = findViewById(R.id.output);
     }
 
     private Button withOnClick(@IdRes int id) {
-        Button button = (Button) findViewById(id);
+        Button button = findViewById(id);
         button.setOnClickListener(this);
         return button;
     }
@@ -57,7 +54,8 @@ public final class MainActivity extends AppCompatActivity
     public void onClick(View v) {
         for (Map.Entry<AuthenticationWay, Button> entry : buttons.entrySet()) {
             if (entry.getValue() == v) { // find way of clicked button
-                VkApp.getInstance(BuildConfig.VK_APP_ID).login(this, EnumSet.noneOf(VkScope.class), entry.getKey(), getSupportFragmentManager());
+                VkApp.getInstance(BuildConfig.VK_APP_ID)
+                        .androidX().login(this, Collections.<VkScope>emptySet(), entry.getKey(), getSupportFragmentManager());
                 return;
             }
         }

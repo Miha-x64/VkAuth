@@ -1,12 +1,12 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion '29.0.2'
+    compileSdkVersion target_sdk
+    buildToolsVersion build_tools
 
     defaultConfig {
         minSdkVersion 11
-        targetSdkVersion 29
+        targetSdkVersion target_sdk
         versionCode 1
         versionName "1.0"
 
@@ -22,5 +22,7 @@ android {
 
 dependencies {
     implementation "com.android.support:support-annotations:$support_version"
-    provided "com.android.support:appcompat-v7:$support_version"
+    compileOnly "com.android.support:appcompat-v7:$support_version"
+    compileOnly "androidx.appcompat:appcompat:$x_appcompat_version"
+    compileOnly "androidx.fragment:fragment:$x_fragment_version"
 }

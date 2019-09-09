@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.SparseArray;
 
 import java.util.HashMap;
@@ -106,19 +105,9 @@ public final class VkApp {
      * @param authenticationWay a way of authentication
      * @param fragmentManager   a fragment manager
      */
-    public <A extends Activity & VkAuthCallbackProvider> void login(A caller, Set<VkScope> scope, AuthenticationWay authenticationWay, android.app.FragmentManager fragmentManager) {
-        required(caller, "caller", scope, "scope", authenticationWay, "authenticationWay", fragmentManager, "fragmentManager");
-        authenticationWay.perform(caller, createRequestBundle(scope), fragmentManager);
-    }
-
-    /**
-     * Perform auth from android.support.v7.app.AppCompatActivity through fragment back-port.
-     * @param caller            AppCompatActivity which implements VkAuthCallbackProvider
-     * @param scope             permissions
-     * @param authenticationWay a way of authentication
-     * @param fragmentManager   a fragment manager
-     */
-    public <A extends AppCompatActivity & VkAuthCallbackProvider> void login(A caller, Set<VkScope> scope, AuthenticationWay authenticationWay, android.support.v4.app.FragmentManager fragmentManager) {
+    public <A extends Activity & VkAuthCallbackProvider> void login(
+            A caller, Set<VkScope> scope, AuthenticationWay authenticationWay, android.app.FragmentManager fragmentManager
+    ) {
         required(caller, "caller", scope, "scope", authenticationWay, "authenticationWay", fragmentManager, "fragmentManager");
         authenticationWay.perform(caller, createRequestBundle(scope), fragmentManager);
     }
@@ -130,21 +119,101 @@ public final class VkApp {
      * @param authenticationWay a way of authentication
      * @param fragmentManager   a fragment manager
      */
-    public void login(android.app.Fragment caller, Set<VkScope> scope, AuthenticationWay authenticationWay, android.app.FragmentManager fragmentManager) {
+    public void login(
+            android.app.Fragment caller, Set<VkScope> scope, AuthenticationWay authenticationWay, android.app.FragmentManager fragmentManager
+    ) {
         required(caller, "caller", caller.getActivity(), "caller.getActivity()", scope, "scope", authenticationWay, "authenticationWay");
         authenticationWay.perform(caller, createRequestBundle(scope), fragmentManager);
     }
 
+    private Support support;
     /**
-     * Perform auth from android.support.v4.app.Fragment.
-     * @param caller            caller Fragment
-     * @param scope             permissions
-     * @param authenticationWay a way of authentication
-     * @param fragmentManager   a fragment manager
+     * Provides auth via Support libraries.
      */
-    public void login(android.support.v4.app.Fragment caller, Set<VkScope> scope, AuthenticationWay authenticationWay, android.support.v4.app.FragmentManager fragmentManager) {
-        required(caller, "caller", caller.getActivity(), "caller.getActivity()", scope, "scope", authenticationWay, "authenticationWay");
-        authenticationWay.perform(caller, createRequestBundle(scope), fragmentManager);
+    public Support support() {
+        Support s = support;
+        return s == null ? support = new Support() : s;
+    }
+
+    /**
+     * Provides auth via Support libraries.
+     */
+    public final class Support {
+        /*pkg*/ Support() {}
+
+        /**
+         * Perform auth from android.support.v7.app.AppCompatActivity through fragment back-port.
+         * @param caller            AppCompatActivity which implements VkAuthCallbackProvider
+         * @param scope             permissions
+         * @param authenticationWay a way of authentication
+         * @param fragmentManager   a fragment manager
+         */
+        public <A extends android.support.v7.app.AppCompatActivity & VkAuthCallbackProvider> void login(
+                A caller, Set<VkScope> scope, AuthenticationWay authenticationWay, android.support.v4.app.FragmentManager fragmentManager
+        ) {
+            required(caller, "caller", scope, "scope", authenticationWay, "authenticationWay", fragmentManager, "fragmentManager");
+            authenticationWay.perform(caller, createRequestBundle(scope), fragmentManager);
+        }
+
+        /**
+         * Perform auth from android.support.v4.app.Fragment.
+         * @param caller            caller Fragment
+         * @param scope             permissions
+         * @param authenticationWay a way of authentication
+         * @param fragmentManager   a fragment manager
+         */
+        public void login(
+                android.support.v4.app.Fragment caller, Set<VkScope> scope, AuthenticationWay authenticationWay, android.support.v4.app.FragmentManager fragmentManager
+        ) {
+            required(caller, "caller", caller.getActivity(), "caller.getActivity()", scope, "scope", authenticationWay, "authenticationWay");
+            authenticationWay.perform(caller, createRequestBundle(scope), fragmentManager);
+        }
+
+    }
+
+    private AndroidX androidX;
+    /**
+     * Provides auth via AndroidX libraries.
+     */
+    public AndroidX androidX() {
+        AndroidX x = androidX;
+        return x == null ? androidX = new AndroidX() : x;
+    }
+
+    /**
+     * Provides auth via AndroidX libraries.
+     */
+    public final class AndroidX {
+        /*pkg*/ AndroidX() {}
+
+        /**
+         * Perform auth from androidx.appcompat.app.AppCompatActivity through androidx.fragment back-port.
+         * @param caller            AppCompatActivity which implements VkAuthCallbackProvider
+         * @param scope             permissions
+         * @param authenticationWay a way of authentication
+         * @param fragmentManager   a fragment manager
+         */
+        public <A extends androidx.appcompat.app.AppCompatActivity & VkAuthCallbackProvider> void login(
+                A caller, Set<VkScope> scope, AuthenticationWay authenticationWay, androidx.fragment.app.FragmentManager fragmentManager
+        ) {
+            required(caller, "caller", scope, "scope", authenticationWay, "authenticationWay", fragmentManager, "fragmentManager");
+            authenticationWay.perform(caller, createRequestBundle(scope), fragmentManager);
+        }
+
+        /**
+         * Perform auth from androidx.fragment.
+         * @param caller            caller Fragment
+         * @param scope             permissions
+         * @param authenticationWay a way of authentication
+         * @param fragmentManager   a fragment manager
+         */
+        public void login(
+                androidx.fragment.app.Fragment caller, Set<VkScope> scope, AuthenticationWay authenticationWay, androidx.fragment.app.FragmentManager fragmentManager
+        ) {
+            required(caller, "caller", caller.getActivity(), "caller.getActivity()", scope, "scope", authenticationWay, "authenticationWay");
+            authenticationWay.perform(caller, createRequestBundle(scope), fragmentManager);
+        }
+
     }
 
     private Bundle createRequestBundle(Set<VkScope> scope) {

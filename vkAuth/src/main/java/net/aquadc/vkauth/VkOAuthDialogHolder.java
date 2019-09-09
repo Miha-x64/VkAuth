@@ -153,38 +153,29 @@ import static net.aquadc.vkauth.Util.explodeQueryString;
     }
 
     public static final class NativeFragment extends android.app.DialogFragment implements Host {
-
         private VkOAuthDialogHolder holder;
-
         @Override public Dialog onCreateDialog(Bundle savedInstanceState) {
-            holder = new VkOAuthDialogHolder(getActivity(), getArguments(), savedInstanceState, this);
-            return holder.dialog;
+            return (holder = new VkOAuthDialogHolder(getActivity(), getArguments(), savedInstanceState, this)).dialog;
         }
-
         @Override public void onSaveInstanceState(Bundle outState) {
             super.onSaveInstanceState(outState);
             holder.onSaveInstanceState(outState);
         }
-
         @Override public void onDismiss(DialogInterface dialog) {
             super.onDismiss(dialog);
             deliverResult();
         }
-
         private void deliverResult() {
             android.app.Fragment target = getTargetFragment();
             if (target == null) {
                 holder.deliverResultToActivity(getActivity());
             } else {
-                Bundle arguments = getArguments();
-                target.onActivityResult(arguments.getInt("request code"), holder.resultCode, holder.data);
+                target.onActivityResult(getArguments().getInt("request code"), holder.resultCode, holder.data);
             }
         }
-
         @Override public VkOAuthDialogHolder getHolder() {
             return holder;
         }
-
         @Override public void setResultAndFinish(int result, Intent data) {
             holder.resultCode = result;
             holder.data = data;
@@ -193,38 +184,60 @@ import static net.aquadc.vkauth.Util.explodeQueryString;
     }
 
     public static final class CompatFragment extends android.support.v4.app.DialogFragment implements Host {
-
         private VkOAuthDialogHolder holder;
-
         @NonNull @Override public Dialog onCreateDialog(Bundle savedInstanceState) {
-            holder = new VkOAuthDialogHolder(getActivity(), getArguments(), savedInstanceState, this);
-            return holder.dialog;
+            return (holder = new VkOAuthDialogHolder(getActivity(), getArguments(), savedInstanceState, this)).dialog;
         }
-
         @Override public void onSaveInstanceState(Bundle outState) {
             super.onSaveInstanceState(outState);
             holder.onSaveInstanceState(outState);
         }
-
         @Override public void onDismiss(DialogInterface dialog) {
             super.onDismiss(dialog);
             deliverResult();
         }
-
         private void deliverResult() {
             android.support.v4.app.Fragment target = getTargetFragment();
             if (target == null) {
                 holder.deliverResultToActivity(getActivity());
             } else {
-                Bundle arguments = getArguments();
-                target.onActivityResult(arguments.getInt("request code"), holder.resultCode, holder.data);
+                target.onActivityResult(getArguments().getInt("request code"), holder.resultCode, holder.data);
             }
         }
-
         @Override public VkOAuthDialogHolder getHolder() {
             return holder;
         }
+        @Override public void setResultAndFinish(int result, Intent data) {
+            holder.resultCode = result;
+            holder.data = data;
+            dismiss();
+        }
+    }
 
+    public static final class XFragment extends androidx.fragment.app.DialogFragment implements Host {
+        private VkOAuthDialogHolder holder;
+        @NonNull @Override public Dialog onCreateDialog(Bundle savedInstanceState) {
+            return (holder = new VkOAuthDialogHolder(getActivity(), getArguments(), savedInstanceState, this)).dialog;
+        }
+        @Override public void onSaveInstanceState(Bundle outState) {
+            super.onSaveInstanceState(outState);
+            holder.onSaveInstanceState(outState);
+        }
+        @Override public void onDismiss(DialogInterface dialog) {
+            super.onDismiss(dialog);
+            deliverResult();
+        }
+        private void deliverResult() {
+            androidx.fragment.app.Fragment target = getTargetFragment();
+            if (target == null) {
+                holder.deliverResultToActivity(getActivity());
+            } else {
+                target.onActivityResult(getArguments().getInt("request code"), holder.resultCode, holder.data);
+            }
+        }
+        @Override public VkOAuthDialogHolder getHolder() {
+            return holder;
+        }
         @Override public void setResultAndFinish(int result, Intent data) {
             holder.resultCode = result;
             holder.data = data;
